@@ -1,0 +1,12 @@
+Assembly-CSharp.csproj
+URLsToPictures.sln
+bin/*
+.vs/
+obj/*
+Temp/*
+Logs/*
+Library/*
+Assets/StreamingAssets/extracted/*
+*.htm
+build/*
+Build Versions/*
