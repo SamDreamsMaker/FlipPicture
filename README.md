@@ -1,10 +1,7 @@
 # FlipPicture
-Put your pictures in FlipPicture_Data\StreamingAssets\ then run the app, click on the button and enjoy !
+Put your pictures in FlipPicture_Data\StreamingAssets\toFlip then run the app, click on the button and enjoy !
 
-The flipped pictures will be renamed with the suffix "_flip" and put in the same folder
+The flipped pictures will be created a FlipPicture_Data\StreamingAssets\flipped
 
 # Supported formats
 JPEG2000, JPEG, BMP, TIFF, GIF, PNG, APNG
-
-# Build Info
-Files in DLLToAddInBuilt need to be added in the built in FlipPicture_Data\Managed\
