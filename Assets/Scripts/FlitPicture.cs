@@ -37,9 +37,9 @@ public class FlitPicture : MonoBehaviour
         extensions.Add("*.gif");
 
         if (Directory.Exists(Application.streamingAssetsPath)) {
-            string worldsFolder = Path.Combine(Application.streamingAssetsPath, subFolderToFlip);
-            Debug.Log(worldsFolder);
-            DirectoryInfo d = new DirectoryInfo(worldsFolder);
+            string directoryToExplore = Path.Combine(Application.streamingAssetsPath, subFolderToFlip);
+            if (!Directory.Exists(directoryToExplore)) Directory.CreateDirectory(directoryToExplore);
+            DirectoryInfo d = new DirectoryInfo(directoryToExplore);
             foreach (string e in extensions) {
                 foreach (FileInfo file in d.GetFiles(e, SearchOption.AllDirectories)) {
                     string destination = file.FullName.Replace(subFolderToFlip, subFolderFlipped).Replace(file.Name,"");
@@ -89,10 +89,7 @@ public class FlitPicture : MonoBehaviour
         byte[] jpgData = flippedTexture.EncodeToJPG();
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
 
-        if (!Directory.Exists(destination)) {
-            // Créer le dossier s'il n'existe pas
-            Directory.CreateDirectory(destination);
-        }
+        if (!Directory.Exists(destination)) Directory.CreateDirectory(destination);
         string filePath = Path.Combine(destination, fileNameWithoutExtension+".jpeg");
         File.WriteAllBytes(filePath, jpgData);
     }
