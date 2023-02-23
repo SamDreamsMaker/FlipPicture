@@ -1,4 +1,3 @@
-using Aspose.Imaging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -54,16 +53,6 @@ public class FlitPicture : MonoBehaviour
     void DisableMessage() {
         message.SetActive(false);
     }
-    void Flip(string fileLocation, string destination, string nameFile,string extension)
-    {
-        using (Aspose.Imaging.Image image = Aspose.Imaging.Image.Load(fileLocation)) {
-            image.RotateFlip(RotateFlipType.RotateNoneFlipX);
-            if (rescale1820Toggle.isOn) {
-                image.ResizeWidthProportionally(1820);
-            }
-            image.Save(destination);
-        }
-    }
 
     void ReversePixels(string fileLocation, string destination, string fileName) {
         byte[] fileData = File.ReadAllBytes(fileLocation);
@@ -81,9 +70,14 @@ public class FlitPicture : MonoBehaviour
         }
 
         // Recréer la texture avec les pixels inversés
-        Texture2D flippedTexture = new Texture2D(texture.width, texture.height);
-        flippedTexture.SetPixels(pixels);
-        flippedTexture.Apply();
+        Texture2D flippedTexture;
+        if (rescale1820Toggle.isOn) {
+            flippedTexture = ResizeTextureKeepRatio(texture, 1820);
+        } else {
+            flippedTexture = new Texture2D(texture.width, texture.height);
+            flippedTexture.SetPixels(pixels);
+            flippedTexture.Apply();
+        }
 
         // Sauvegarder la texture inversée en JPG
         byte[] jpgData = flippedTexture.EncodeToJPG();
@@ -93,5 +87,27 @@ public class FlitPicture : MonoBehaviour
         string filePath = Path.Combine(destination, fileNameWithoutExtension+".jpeg");
         File.WriteAllBytes(filePath, jpgData);
     }
+    public static Texture2D ResizeTextureKeepRatio(Texture2D texture, int targetWidth) {
+        Texture2D flippedTexture = new Texture2D(texture.width, texture.height);
+        for (int i = 0; i < texture.height; i++) {
+            for (int j = 0; j < texture.width; j++) {
+                Color pixel = texture.GetPixel(j, i);
+                flippedTexture.SetPixel(texture.width - j - 1, i, pixel);
+            }
+        }
+        flippedTexture.Apply();
 
+        int targetHeight = (int)((float)flippedTexture.height / (float)flippedTexture.width * (float)targetWidth);
+        Texture2D result = new Texture2D(targetWidth, targetHeight, TextureFormat.RGBA32, false);
+        float incX = ((float)1 / flippedTexture.width) * ((float)flippedTexture.width / (float)targetWidth);
+        float incY = ((float)1 / flippedTexture.height) * ((float)flippedTexture.width / (float)targetWidth);
+        for (int i = 0; i < result.height; ++i) {
+            for (int j = 0; j < result.width; ++j) {
+                Color newColor = flippedTexture.GetPixelBilinear((float)j / (float)result.width, (float)i / (float)result.height);
+                result.SetPixel(j, i, newColor);
+            }
+        }
+        result.Apply();
+        return result;
+    }
 }
