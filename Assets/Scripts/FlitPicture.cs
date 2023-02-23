@@ -15,14 +15,10 @@ public class FlitPicture : MonoBehaviour
     Toggle rescale1820Toggle;
     [SerializeField]
     Button flipButton;
+    [SerializeField]
+    Text workingOnText;
     public void FlipPictures()
     {
-        /*
-        string licenseFile = Path.Combine(Application.streamingAssetsPath, "Aspose.Total.lic");
-        License license = new License();
-        license.SetLicense(licenseFile);
-        */
-
         flipButton.interactable = false;
         DisableMessage();
         List<string> extensions = new List<string>();
@@ -50,8 +46,45 @@ public class FlitPicture : MonoBehaviour
         flipButton.interactable = true;
         Invoke("DisableMessage", 5.0f);
     }
+    public void FlipProcess() {
+        StartCoroutine(FlipPicturesAsync());
+    }
+    IEnumerator FlipPicturesAsync() {
+        flipButton.interactable = false;
+        DisableMessage();
+        List<string> extensions = new List<string>();
+        extensions.Add("*.png");
+        extensions.Add("*.jpg");
+        extensions.Add("*.jpeg");
+        extensions.Add("*.bmp");
+        extensions.Add("*.tiff");
+        extensions.Add("*.apng");
+        extensions.Add("*.jpeg2000");
+        extensions.Add("*.gif");
+
+        if (Directory.Exists(Application.streamingAssetsPath)) {
+            string directoryToExplore = Path.Combine(Application.streamingAssetsPath, subFolderToFlip);
+            if (!Directory.Exists(directoryToExplore)) Directory.CreateDirectory(directoryToExplore);
+            DirectoryInfo d = new DirectoryInfo(directoryToExplore);
+            foreach (string e in extensions) {
+                foreach (FileInfo file in d.GetFiles(e, SearchOption.AllDirectories)) {
+                    UpdateWorkingOnText("Creating file " + file.Name);
+                    yield return new WaitForSeconds(Time.deltaTime);
+                    string destination = file.FullName.Replace(subFolderToFlip, subFolderFlipped).Replace(file.Name, "");
+                    ReversePixels(file.FullName, destination, file.Name);
+                }
+            }
+        }
+        UpdateWorkingOnText("");
+        message.SetActive(true);
+        flipButton.interactable = true;
+        Invoke("DisableMessage", 5.0f);
+    }
     void DisableMessage() {
         message.SetActive(false);
+    }
+    void UpdateWorkingOnText(string text) {
+        workingOnText.text = text;
     }
 
     void ReversePixels(string fileLocation, string destination, string fileName) {
@@ -86,6 +119,8 @@ public class FlitPicture : MonoBehaviour
         if (!Directory.Exists(destination)) Directory.CreateDirectory(destination);
         string filePath = Path.Combine(destination, fileNameWithoutExtension+".jpeg");
         File.WriteAllBytes(filePath, jpgData);
+        Destroy(texture);
+        Destroy(flippedTexture);
     }
     public static Texture2D ResizeTextureKeepRatio(Texture2D texture, int targetWidth) {
         Texture2D flippedTexture = new Texture2D(texture.width, texture.height);
@@ -108,6 +143,7 @@ public class FlitPicture : MonoBehaviour
             }
         }
         result.Apply();
+        Destroy(flippedTexture);
         return result;
     }
 }
